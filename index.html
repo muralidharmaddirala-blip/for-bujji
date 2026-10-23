@@ -147,10 +147,8 @@ h2 { font-family: var(--f-num); font-weight: 500; font-style: normal; text-wrap:
 .b-me { margin: 0; font-size: clamp(1.02rem, 2.6vw, 1.12rem); line-height: 1.7; }
 .b-sign { font-family: var(--f-script); font-weight: 700; font-size: 2.2rem; line-height: 1; color: var(--rose); text-align: right; margin: 0; }
 .b-post { display: flex; flex-direction: column; align-items: center; gap: 0; }
-.stamp { width: 104px; padding: 7px; background: var(--paper); position: relative;
-  -webkit-mask: radial-gradient(circle 4px at 4px 4px, transparent 98%, #000) -4px -4px / 10px 10px;
-          mask: radial-gradient(circle 4px at 4px 4px, transparent 98%, #000) -4px -4px / 10px 10px;
-  filter: drop-shadow(0 1px 1px rgba(0,0,0,.15)); }
+.stamp { width: 104px; padding: 8px; background: #fffdf8; position: relative; box-shadow: 0 1px 3px rgba(54,42,46,.22); }
+.stamp::before { content: ""; position: absolute; inset: -4px; border: 6px dotted var(--paper); pointer-events: none; }
 .stamp-in { border: 1px solid var(--line); padding: 4px; display: grid; gap: 3px; }
 .stamp canvas { width: 100%; aspect-ratio: 900 / 640; display: block; }
 .stamp small { display: block; text-align: center; font-size: .56rem; letter-spacing: .18em; text-transform: uppercase; font-weight: 600; color: var(--fg-soft); }
@@ -974,7 +972,7 @@ MEMORIES.forEach((m, i) => {
             <p class="b-sign">Chandu</p>
           </div>
           <div class="b-post">
-            <div class="stamp"><div class="stamp-in"><canvas width="900" height="640" aria-hidden="true"></canvas><small>No. ${n} · with love</small></div></div>
+            <div class="stamp"><div class="stamp-in"><canvas width="900" height="640" aria-hidden="true"></canvas><small>No. ${n}<br>with love</small></div></div>
             <div class="postmark">Replied<br>with<br>love</div>
           </div>
         </div>
@@ -1167,11 +1165,13 @@ const SFX = (() => {
   const cv = document.getElementById("game"), g = cv.getContext("2d"), W = 192, H = 108, GROUND = 92, RIDE = GROUND - 18;
   const gate = document.getElementById("gate"), enterBtn = document.getElementById("enterBtn"),
         startBtn = document.getElementById("startBtn"), soundBtn = document.getElementById("soundBtn"), gateMsg = document.getElementById("gateMsg");
-  const PAL = { h: "#2b1d1a", s: "#e8b48a", t: "#5b7fe0", p: "#2f3550", d: "#e56b88", w: "#c9cbe0", r: "#ff6b8a", o: "#e0a95a", g: "#7fc46a", k: "#11152b" };
+  const PAL = { h: "#2b1d1a", s: "#e8b48a", t: "#5b7fe0", p: "#2f3550", d: "#e56b88", w: "#c9cbe0", r: "#ff6b8a", o: "#d9963a", y: "#f7cf72", g: "#5fbf4a", n: "#8a8fa8", k: "#11152b" };
   const BOY = ["..hhhh..", ".hhhhhh.", ".hssssh.", "..ssss..", ".tttttt.", "ttttttss", "..tttt..", "..ppppp.", "..p...p."];
   const GIRL = ["..hhhh..", ".hhhhhh.", "hhssssh.", "hhssssh.", "hh.ss.hh", ".dddddd.", "sdddddds", ".dddddd.", "dddddddd", "dddddddd", "..s..s..", "..s..s.."];
   const HEART = [".rr.rr.", "rrrrrrr", "rrrrrrr", ".rrrrr.", "..rrr..", "...r..."];
-  const PURI = [".oo.oo.o", "oooooooo", "gggggggg", "wwwwwwww", ".wwwwww."];
+  // three golden puris filled with green pani, on a steel plate
+  const PU = [".oooo.", "oggggo", "oyoooo", "oooooo", ".oooo."];
+  const PURI = PU.map(r => "." + r + "." + r + "." + r + ".").concat(["w".repeat(22), "." + "n".repeat(20) + "."]);
   // crisp 3x5 pixel letters for in-game words
   const FONT = { Y: ["101", "101", "010", "010", "010"], U: ["101", "101", "101", "101", "111"], C: ["111", "100", "100", "100", "111"], K: ["101", "110", "100", "110", "101"], ":": ["0", "1", "0", "1", "0"], "|": ["1", "1", "1", "1", "1"], " ": ["00", "00", "00", "00", "00"] };
   const text = (str, x, y, c) => { g.fillStyle = c; for (const ch of str) { const m = FONT[ch]; m.forEach((row, j) => [...row].forEach((b, i) => { if (b === "1") g.fillRect(x + i, y + j, 1, 1); })); x += m[0].length + 1; } };
@@ -1208,7 +1208,7 @@ const SFX = (() => {
   }
   function spawn() {
     const kind = (hearts + items.length) % 3 === 2 ? "puri" : "heart";
-    items.push(kind === "puri" ? { k: "puri", x: W + 4, y: GROUND - 5 } : { k: "heart", x: W + 4, y: rr() < .5 ? GROUND - 16 : GROUND - 34 });
+    items.push(kind === "puri" ? { k: "puri", x: W + 4, y: GROUND - 7 } : { k: "heart", x: W + 4, y: rr() < .5 ? GROUND - 16 : GROUND - 34 });
     spawnT = 52 + Math.floor(rr() * 30);
   }
   function step() {
@@ -1220,7 +1220,7 @@ const SFX = (() => {
       if (hearts >= 5 && girlX === null) girlX = W + 10;
       items.forEach(it => it.x -= 1.4);
       items = items.filter(it => {
-        const hit = it.x < 44 && it.x + 7 > 22 && it.y < py + 18 && it.y + 6 > py;
+        const w = it.k === "puri" ? 22 : 7, hit = it.x < 44 && it.x + w > 22 && it.y < py + 18 && it.y + 6 > py;
         if (hit && it.k === "heart") { hearts++; SFX.heart(); return false; }
         if (hit && it.k === "puri") { bubble = 70; SFX.yuck(); return false; }
         return it.x > -10;
